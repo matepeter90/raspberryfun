@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 from time import sleep
 
 class Setup:
+    #Class for different GPIO setups
     def setAllOut():
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(17, GPIO.OUT)
@@ -54,7 +55,7 @@ class Lights:
         self.__processLedArray([1,1,1,1,1,1])
         
     def BasicRunningLight(self,time = 1):
-        """Basic running light without pwm
+        """Basic running light without pwm, running in one direction
         :param time: sleep between led change
         """    
         leds = [0,0,0,0,0,0]
@@ -71,8 +72,61 @@ class Lights:
                     state = 1
             self.__processLedArray(leds)
             sleep(time)
+
+    def BasicTwoWayRunningLight(self,time = 1,tail = 2):
+        """Basic two way running light without pwm, running
+        from one end to the other with tail
+        :param time: float sleep between led change
+        :param tail: int tail size between 1 or 5
+        """
+        if tail < 1 or tail > 5:
+            print("Error: Invalid tail size: %s" % tail)
+            return
+        leds = [0,0,0,0,0,0]
+        index = 0
+        #First it starts from right side
+        direction = "right"
+        #Cooldown is used when it reached the end, but it has to wait for the tail
+        cooldown = False
+        while(True):
+            if direction == "right":
+                #Shuts the light which is not part of the tail anymore
+                if index-tail >= 0:
+                    leds[index-tail] = 0
+                #Lights the next led if we are not at the end
+                if not cooldown:
+                    leds[index] = 1;
+                index += 1
+                #If it reached the end it will wait for the tail
+                if index == 6:
+                    cooldown = True
+                #If tail reached the end it switches direction
+                if index == 5 + tail:
+                    direction = "left"
+                    cooldown = False
+                    #it leaves the last led ON, so it has to continue with the led next to it
+                    index = 4
+            elif direction == "left":
+                #Shuts the light which is not part of the tail anymore
+                if index+tail <= 5:
+                    leds[index+tail] = 0
+                #Lights the next led if we are not at the end
+                if not cooldown:
+                    leds[index] = 1;
+                index -= 1
+                #If it reached the end it will wait for the tail
+                if index == -1:
+                    cooldown = True
+                #If tail reached the end it switches direction
+                if index == 0 - tail:
+                    direction = "right"
+                    cooldown = False
+                    #it leaves the last led ON, so it has to continue with the led next to it
+                    index = 1
+            self.__processLedArray(leds)
+            sleep(time)
             
             
 
 program = Lights()
-program.BasicRunningLight(0.05)
+program.BasicTwoWayRunningLight(0.05,3)
