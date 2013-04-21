@@ -1,3 +1,3 @@
-import commandline
+from commandline import CommandLine
 
-cl = commandline.CommandLine()
+CommandLine().cmdloop()

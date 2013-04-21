@@ -1,26 +1,16 @@
 import RPi.GPIO as GPIO
 from time import sleep
-
-class Setup:
-    #Class for different GPIO setups
-    def setAllOut():
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(17, GPIO.OUT)
-        GPIO.setup(18, GPIO.OUT)
-        GPIO.setup(27, GPIO.OUT)
-        GPIO.setup(22, GPIO.OUT)
-        GPIO.setup(23, GPIO.OUT)
-        GPIO.setup(24, GPIO.OUT)
+from setup import Setup
 
 class Lights:
-    #Class for playing with leds
+    """Class for playing with leds"""
 
     def __init__(self):
-        #Initialize leds
+        """Initialize leds"""
         Setup.setAllOut()
 
     def __enter__(self):
-        #Shut all led
+        """Shut all led"""
         self.__processLedArray([0,0,0,0,0,0])
         return self
     
