@@ -1,13 +1,21 @@
 import RPi.GPIO as GPIO
 from time import sleep
-from setup import Setup
+import alsaaudio
+import struct
 
 class Lights:
     """Class for playing with leds"""
 
     def __init__(self):
         """Initialize leds"""
-        Setup.setAllOut()
+        #Setup.setAllOut()
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(17, GPIO.OUT)
+        GPIO.setup(18, GPIO.OUT)
+        GPIO.setup(27, GPIO.OUT)
+        GPIO.setup(22, GPIO.OUT)
+        GPIO.setup(23, GPIO.OUT)
+        GPIO.setup(24, GPIO.OUT)
 
     def __enter__(self):
         """Shut all led"""
@@ -139,5 +147,39 @@ class Lights:
         except KeyboardInterrupt:
             pass
         GPIO.cleanup()
+
+    def music(self, filename):
+        """plays wav file"""
+        out = alsaaudio.PCM()
+        out.setchannels(2)
+        out.setrate(44100)
+        out.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+        f = open(filename, 'rb')
+        counter = 0
+        data = f.read(320)
+        while data:
+            out.write(data)
+            if counter == 20:
+                data = struct.unpack('<H',data[0:2])[0]
+                if data > 60000:
+                    self.__processLedArray([0,0,0,0,0,0])
+                elif data > 50000:
+                    self.__processLedArray([1,0,0,0,0,0])
+                elif data > 40000:
+                    self.__processLedArray([1,1,0,0,0,0])
+                elif data > 30000:
+                    self.__processLedArray([1,1,1,0,0,0])
+                elif data > 20000:
+                    self.__processLedArray([1,1,1,1,0,0])
+                elif data > 10000:
+                    self.__processLedArray([1,1,1,1,1,1])
+                counter = 0
+            counter += 1
+            data = f.read(320)
+
+
+
+
+        
     def __exit__(self, type, value, traceback):
         GPIO.cleanup()

@@ -78,5 +78,7 @@ class LightsCommand(SubCommand):
                 tail = 2
             print("Press CTRL+C to stop")
             program.BasicTwoWayRunningLight(time,tail)
-        
-    
+
+    def do_music(self, line):
+        with raspberryfun.Lights() as program:
+            program.music(line)
